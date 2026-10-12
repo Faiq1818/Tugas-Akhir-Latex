@@ -4,6 +4,8 @@
 *.fls
 *.log
 *.synctex.gz
+*.equ
+*.lol
 thesis-blx.bib
 thesis.bbl
 thesis.lof
