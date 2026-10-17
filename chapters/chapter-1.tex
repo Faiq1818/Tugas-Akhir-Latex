@@ -6,10 +6,7 @@ Sistem backend modern berskala besar sangat bergantung pada kemampuan pemrosesan
 
 Keberagaman paradigma yang diterapkan industri saat ini beroperasi melintasi lapisan komputasi yang berbeda. Paradigma pertama adalah In-Memory Engine, yang mengandalkan algoritma antrean waktu dalam memori proses seperti Hierarchical Timing Wheels atau Min-Heap. Pendekatan ini menawarkan eksekusi dengan latensi sub-milidetik dan kompleksitas operasi yang sangat rendah karena meniadakan perantara I/O eksternal, namun bersifat volatile sehingga antrean rentan hilang saat terjadi terminasi proses atau kegagalan sistem. Paradigma kedua adalah Database-Backed / Cron Worker, yang memanfaatkan sistem manajemen basis data relasional (RDBMS) seperti PostgreSQL melalui mekanisme polling berkala berbasis indeks waktu dan transisi status baris [4]. Pendekatan ini memberikan jaminan durabilitas penuh berbasis transaksi ACID, namun rentan menimbulkan overhead pembacaan disk berulang serta persaingan kunci (lock contention), kecuali dimitigasi dengan teknik penguncian non-blocking seperti klausa FOR UPDATE SKIP LOCKED [4]. Paradigma ketiga adalah Distributed Queue Engine, yang mengadopsi penyimpanan memori terdistribusi seperti Redis melalui struktur data Sorted Set berbasis skip list [5]. Arsitektur ini memfasilitasi status terbagi (shared state) antar-pekerja secara terdistribusi dengan kompleksitas $O(\log n)$, kendati memicu overhead pada serialisasi data, konsumsi memori, serta latensi network round-trip time (RTT) [5].\par
 
-\begin{enumerate}[noitemsep]
-	\item Deskripsi yang luas dan longgar yang berkaitan dengan bidang/masalah di masyarakat, industry dan atau bidang-bidang lainnya. Deskripsi ini mewakili bidang/masalah secara umum yang berkaitan dengan Teknik Informatika, bekerja dan akan terlibat di dalamnya. Sangat disarankan di sini, sebisa mungkin tidak ada Batasan tentang pilihan teknologi yang akan digunakan. Contoh: bidang transportasi, bidang telekomunikasi, bidang Pendidikan, bidang manufaktur, bidang renewable energi, pariwisata, militer, transportasi, kesehatan, pertanian, pengelolaan infrastruktur dan sebagainya.
-	\item Deskripsi lebih khusus dan mendetail yang didapatkan dari poin 1 di atas. Dari deskripsi umum di atas, selanjutkan fokuskan pada fenomena masalah yang akan diangkat. Pendetailan harus mampu membawa masalah kepada masalah yang mennjukkan peran Anda dalam penelitian 
-\end{enumerate}
+Masing-masing pendekatan tersebut membawa trade-off yang berbeda antara throughput, distribusi persentil latensi ($p50$, $p95$, $p99$), jitter, durabilitas data terhadap kegagalan sistem, dan profil konsumsi sumber daya komputasi \cite{kleppmann2026designing}. Sebagian besar literatur dan evaluasi kinerja yang ada cenderung berfokus pada optimasi internal dalam satu lapisan tertentu secara terisolasi atau hanya menguji metrik eksternal seperti latensi respons dan throughput \cite{dobbelaere2017kafkaversusrabbitmq}. Pengukuran terhadap profil konsumsi sumber daya komputasi seperti utilisasi CPU kernel versus user space, alokasi memori, dan I/O overhead masih sangat jarang dilakukan karena tingginya kompleksitas isolasi eksperimen lintas batasan proses. Ketiadaan studi komparatif empiris yang membandingkan performa dan efisiensi sumber daya secara lintas paradigma antara In-Memory Engine, Database-Backed Worker, dan Queue Engine di bawah lingkungan runtime server terstandarisasi menciptakan celah penelitian (research gap) yang nyata. Penelitian ini mengatasi permasalahan tersebut dengan merancang benchmarking testbed komparatif sistematis untuk mengukur latensi jitter, batas throughput, serta konsumsi sumber daya di bawah pola beban terdistribusi seragam (uniform load) dan skenario lonjakan beban mendadak (spike load). \par
 
 \section{Rumusan Masalah} \label{I.Rumusan Masalah}
 Merumuskan masalah secara konkrit, bentuk pertanyaan fakta / kebenaran yang masih dipertanyakan \par
@@ -19,14 +16,14 @@ Dari pendahuluan di atas, mahasiswa diharapkan dapat memformulasikan masalah eng
 Lebih jelasnya masalah yang diharapkan adalah seperti dalam 3 poin di bawah ini. Jika tidak mengandung semua unsur dibawah maka tugas akhir ini tidak memenuhi syarat sebagai tugas akhir. \par
 
 \begin{enumerate}[noitemsep]
-	\item Harus ada proses perancangan yang utuh dari penentuan masalah real yang perlu dipecahkan, 
+	\item Harus ada proses perancangan yang utuh dari penentuan masalah real yang perlu dipecahkan,
 	\item Harus menjelaskan spesifikasi yang akan dibuat
 	\item Harus ada implementasi dalam bentuk salah satu di bawah ini:
-	\begin{enumerate}
-		\item Hardware/perangkat keras
-		\item Software/perangkat lunak
-		\item Proses/simulasi yang dibuat sendiri (Matlab, C/C++, Python, dan lain-lain) bukan melalui software yang murni dan sudah paten dan tinggal memasukkan data (ETAP, EDSA, SPSS, dan lain-lain)
-	\end{enumerate}
+	      \begin{enumerate}
+		      \item Hardware/perangkat keras
+		      \item Software/perangkat lunak
+		      \item Proses/simulasi yang dibuat sendiri (Matlab, C/C++, Python, dan lain-lain) bukan melalui software yang murni dan sudah paten dan tinggal memasukkan data (ETAP, EDSA, SPSS, dan lain-lain)
+	      \end{enumerate}
 \end{enumerate}
 
 Hasil rancangan dalam bentuk hardware/software/simulasi tersebut harus diuji dan diverifikasi apakah bekerja dengan baik atau belum Jika belum bekerja baik, mahasiswa harus bisa menjelaskan alasannya dan perbaikannya ke depan (walau pun saat tugas akhir ini selesai, alat/software/simulasi belum bisa bekerja).\par
