@@ -4,48 +4,42 @@
 \section{Latar Belakang} \label{I.Latar Belakang}
 Sistem backend modern berskala besar sangat bergantung pada kemampuan pemrosesan tugas tertunda dan eksekusi kejadian berkala dalam volume tinggi. Implementasi ini mencakup fungsionalitas seperti sistem pengingat pengguna, orkestrasi notifikasi terdistribusi, hingga eksekusi alur kerja berkala yang menuntut keandalan tinggi. Dari prinsip komputasi dasar, tantangan fundamental dari sebuah event scheduling engine adalah mentransformasikan representasi data statis berbasis waktu (timestamp target) menjadi eksekusi dinamis yang tepat waktu dengan kompleksitas komputasi yang efisien tanpa membebani subsistem I/O mesin. Presisi waktu ini diukur melalui deviasi antara waktu eksekusi riil terhadap waktu target (temporal jitter) \cite{buttazzo2011hard}, di mana sistem ideal dituntut mempertahankan jitter mendekati nol sembari memproses peningkatan beban konkurensi secara simultan.\par
 
-Keberagaman paradigma yang diterapkan industri saat ini beroperasi melintasi lapisan komputasi yang berbeda. Paradigma pertama adalah In-Memory Engine, yang mengandalkan algoritma antrean waktu dalam memori proses seperti Hierarchical Timing Wheels atau Min-Heap. Pendekatan ini menawarkan eksekusi dengan latensi sub-milidetik dan kompleksitas operasi yang sangat rendah karena meniadakan perantara I/O eksternal, namun bersifat volatile sehingga antrean rentan hilang saat terjadi terminasi proses atau kegagalan sistem. Paradigma kedua adalah Database-Backed / Cron Worker, yang memanfaatkan sistem manajemen basis data relasional (RDBMS) seperti PostgreSQL melalui mekanisme polling berkala berbasis indeks waktu dan transisi status baris [4]. Pendekatan ini memberikan jaminan durabilitas penuh berbasis transaksi ACID, namun rentan menimbulkan overhead pembacaan disk berulang serta persaingan kunci (lock contention), kecuali dimitigasi dengan teknik penguncian non-blocking seperti klausa FOR UPDATE SKIP LOCKED [4]. Paradigma ketiga adalah Distributed Queue Engine, yang mengadopsi penyimpanan memori terdistribusi seperti Redis melalui struktur data Sorted Set berbasis skip list [5]. Arsitektur ini memfasilitasi status terbagi (shared state) antar-pekerja secara terdistribusi dengan kompleksitas $O(\log n)$, kendati memicu overhead pada serialisasi data, konsumsi memori, serta latensi network round-trip time (RTT) [5].\par
+Keberagaman paradigma yang diterapkan industri saat ini beroperasi melintasi lapisan komputasi yang berbeda. Paradigma pertama adalah In-Memory Engine, yang mengandalkan algoritma antrean waktu dalam memori proses seperti Hierarchical Timing Wheels atau Min-Heap. Pendekatan ini menawarkan eksekusi dengan latensi sub-milidetik dan kompleksitas operasi yang sangat rendah karena meniadakan perantara I/O eksternal, namun bersifat volatile sehingga antrean rentan hilang saat terjadi terminasi proses atau kegagalan sistem. Paradigma kedua adalah Database-Backed / Cron Worker, yang memanfaatkan sistem manajemen basis data relasional (RDBMS) seperti PostgreSQL melalui mekanisme polling berkala berbasis indeks waktu dan transisi status baris [x]. Pendekatan ini memberikan jaminan durabilitas penuh berbasis transaksi ACID, namun rentan menimbulkan overhead pembacaan disk berulang serta persaingan kunci (lock contention), kecuali dimitigasi dengan teknik penguncian non-blocking seperti klausa FOR UPDATE SKIP LOCKED [x]. Paradigma ketiga adalah Distributed Queue Engine, yang mengadopsi penyimpanan memori terdistribusi seperti Redis melalui struktur data Sorted Set berbasis skip list [x]. Arsitektur ini memfasilitasi status terbagi (shared state) antar-pekerja secara terdistribusi dengan kompleksitas $O(\log n)$, kendati memicu overhead pada serialisasi data, konsumsi memori, serta latensi network round-trip time (RTT) [x].\par
 
 Masing-masing pendekatan tersebut membawa trade-off yang berbeda antara throughput, distribusi persentil latensi ($p50$, $p95$, $p99$), jitter, durabilitas data terhadap kegagalan sistem, dan profil konsumsi sumber daya komputasi \cite{kleppmann2026designing}. Sebagian besar literatur dan evaluasi kinerja yang ada cenderung berfokus pada optimasi internal dalam satu lapisan tertentu secara terisolasi atau hanya menguji metrik eksternal seperti latensi respons dan throughput \cite{dobbelaere2017kafkaversusrabbitmq}. Pengukuran terhadap profil konsumsi sumber daya komputasi seperti utilisasi CPU kernel versus user space, alokasi memori, dan I/O overhead masih sangat jarang dilakukan karena tingginya kompleksitas isolasi eksperimen lintas batasan proses. Ketiadaan studi komparatif empiris yang membandingkan performa dan efisiensi sumber daya secara lintas paradigma antara In-Memory Engine, Database-Backed Worker, dan Queue Engine di bawah lingkungan runtime server terstandarisasi menciptakan celah penelitian (research gap) yang nyata. Penelitian ini mengatasi permasalahan tersebut dengan merancang benchmarking testbed komparatif sistematis untuk mengukur latensi jitter, batas throughput, serta konsumsi sumber daya di bawah pola beban terdistribusi seragam (uniform load) dan skenario lonjakan beban mendadak (spike load). \par
 
 \section{Rumusan Masalah} \label{I.Rumusan Masalah}
-Merumuskan masalah secara konkrit, bentuk pertanyaan fakta / kebenaran yang masih dipertanyakan \par
-
-Dari pendahuluan di atas, mahasiswa diharapkan dapat memformulasikan masalah engineering yang solid. Masalah yang kemudian akan diformulasi mahasiswa harus terdefinisi dengan baik (harus jelas, tidak ambigu/ada makna ganda, tanpa menggunakan jargon), masalah harus real (benar-benar ada masalah terebut) sehingga nantinya akan ada solusi yang konkrit. Perlu dipertimbangkan juga masalah tersebut harus bisa dipecahkan dalam waktu maksimal 1 semester oleh mahasiswa dengan alokasi waktu per minggu tidak lebih dari 20 jam per minggu. \par
-
-Lebih jelasnya masalah yang diharapkan adalah seperti dalam 3 poin di bawah ini. Jika tidak mengandung semua unsur dibawah maka tugas akhir ini tidak memenuhi syarat sebagai tugas akhir. \par
-
-\begin{enumerate}[noitemsep]
-	\item Harus ada proses perancangan yang utuh dari penentuan masalah real yang perlu dipecahkan,
-	\item Harus menjelaskan spesifikasi yang akan dibuat
-	\item Harus ada implementasi dalam bentuk salah satu di bawah ini:
-	      \begin{enumerate}
-		      \item Hardware/perangkat keras
-		      \item Software/perangkat lunak
-		      \item Proses/simulasi yang dibuat sendiri (Matlab, C/C++, Python, dan lain-lain) bukan melalui software yang murni dan sudah paten dan tinggal memasukkan data (ETAP, EDSA, SPSS, dan lain-lain)
-	      \end{enumerate}
+\begin{enumerate}
+	\item Bagaimana perbandingan akurasi waktu eksekusi (temporal jitter pada p50, p95, p99) dan throughput maksimum antara ketiga strategi di bawah beban uniform dan beban spike?
+	\item Bagaimana perbandingan konsumsi sumber daya (utilisasi CPU user dan kernel, memori heap dan RSS, serta I/O) dari ketiga strategi
+	\item Bagaimana ketahanan ketiga strategi terhadap kegagalan proses, yang diukur melalui jumlah event hilang atau terlambat dan waktu pemulihan setelah proses dihentikan secara paksa?
+	\item Strategi mana yang paling sesuai untuk karakteristik kebutuhan tertentu (misalnya prioritas latensi, durabilitas, atau efisiensi sumber daya), berdasarkan trade-off yang terukur
 \end{enumerate}
-
-Hasil rancangan dalam bentuk hardware/software/simulasi tersebut harus diuji dan diverifikasi apakah bekerja dengan baik atau belum Jika belum bekerja baik, mahasiswa harus bisa menjelaskan alasannya dan perbaikannya ke depan (walau pun saat tugas akhir ini selesai, alat/software/simulasi belum bisa bekerja).\par
-
-Selain itu, rumusan sangat disarankan untuk melibatkan pengalaman multidisiplin. Misalnya melibatkan unsur-unsur seperti seni, ekonomi, mekanik, politik, proses kimia, etika, kesehatan, dan sebagainya. Contoh-contoh rumusan masalah yang \textbf{tidak disarankan}: \par
-
-\begin{enumerate}[noitemsep]
-	\item \textbf{Masalah tidak real dan tidak terlalu hipotetis}. Misalnya, topik riset atau topik untuk lomba (contoh: mencari metode paling cepat untuk menentukan posisi kebakaran di dalam hutan).
-	\item Rumusan untuk membuat alat/produk yang \textbf{tidak dapat diimplemetasikan dan diukur/diuji dalam waktu maksimal 2 semester}. Misalnya membuat roket dengan daya jangkau 500 km.
-	\item \textbf{Solusi terlalu kompleks} sehingga dalam satu tahun hanya dapat menghasilkan bagian kecil dari solusi yang diharapkan Rumusan masalah berisi ringkasan fenomena dan masalah.
-\end{enumerate}
-
-Rumusan masalah akan dijawab di \nameref{V.Kesimpulan}. Rumusan Masalah disarankan untuk ditulis per poin.
 
 \section{Tujuan Penelitian} \label{I.Tujuan}
-Tujuan diisikan tujuan dari penelitian yang dilakukan, berdasarkan sub-bab \nameref{I.Latar Belakang} dan \nameref{I.Rumusan Masalah} dilengkapi dengan spesifikasinya. Tuliskan Tujuan sesuai dengan poin Rumusan Masalah. \par
+\begin{enumerate}
+	\item Mengukur dan membandingkan temporal jitter (p50, p95, p99) serta throughput maksimum ketiga strategi pada beban uniform dan spike.
+	\item Mengukur dan membandingkan konsumsi sumber daya (CPU user/kernel, heap/RSS, I/O) ketiga strategi.
+	\item Mengukur dan membandingkan durabilitas serta waktu pemulihan ketiga strategi pada skenario kegagalan proses.
+	\item Menyusun rekomendasi pemilihan strategi berdasarkan trade-off antara kinerja, sumber daya, dan durabilitas, beserta batas validitasnya
+\end{enumerate}
 
 \section{Batasan Masalah} \label{I.Batasan}
-Batasan yang dimaksud disini ialah batasan dari penelitian tugas akhir yang dilakukan. Batasan masalah ditujukan agar tugas akhir yang dilakukan tidak terlalu luas, dan menjadi lebih realistis untuk diselesaikan. \par
+\begin{enumerate}
+	\item Penelitian membandingkan tiga strategi yaitu In-Memory Engine, Database-Backed Worker menggunakan PostgreSQL, dan Queue Engine menggunakan Redis.
+	\item Seluruh pengujian menggunakan satu bahasa pemrograman dan runtime yang sama, pada satu mesin dengan spesifikasi tetap, dijalankan dalam container dengan batas sumber daya yang seragam.
+	\item Redis dan PostgreSQL diuji dalam konfigurasi single-node. Klaster, replikasi, dan sharding tidak dicakup
+	\item Uji kegagalan dibatasi pada penghentian paksa proses aplikasi. Kegagalan jaringan dan kegagalan perangkat keras tidak dicakup.
+	\item Pola beban dibatasi pada dua jenis: uniform dan spike
+	\item Aspek keamanan dan biaya finansial tidak dianalisis.
+\end{enumerate}
 
 \section{Manfaat Penelitian} \label{I.Manfaat}
-Manfaat tugas akhir yang dilakukan didefinisikan sebagai manfaat yang diperoleh ketika tugas akhir telah selesai dilakukan. Manfaat dapat berupa manfaat untuk: \textbf{mahasiswa, program studi teknik informatika, ITERA, masyarakat, dunia akademisi, dan dunia penelitian}. \par
+\begin{enumerate}
+	\item Melatih kemampuan merancang eksperimen komparatif yang terkontrol, mulai dari membangun benchmarking testbed, mengukur latensi dan konsumsi sumber daya lintas proses, hingga menganalisis hasil secara statistik, serta memperdalam pemahaman tentang struktur data waktu, mekanisme concurrency pada basis data relasional, dan arsitektur penyimpanan in-memory.
+	\item Memberikan dasar empiris bagi praktisi dan pengembang perangkat lunak dalam memilih strategi event scheduling sesuai kebutuhan, baik yang memprioritaskan presisi waktu, durabilitas, maupun efisiensi sumber daya, sehingga keputusan arsitektur tidak lagi bersandar pada asumsi dan dapat mencegah over-provisioning infrastruktur.
+	\item Memberikan kontribusi dalam pengembangan evaluasi kinerja sistem event scheduling lintas paradigma yang dapat menjadi rujukan bagi penelitian lanjutan di bidang sistem terdistribusi dan penjadwalan.
+\end{enumerate}
 
 
 \section{Sistematika Penulisan} \label{I.Sistematika}
