@@ -41,78 +41,72 @@ Ringkasan perbandingan kelima penelitian terdahulu tersebut beserta posisi penel
 Berdasarkan kajian terhadap penelitian-penelitian di atas, terlihat bahwa evaluasi yang ada umumnya hanya membandingkan sesama \textit{message broker} untuk pengiriman pesan langsung \cite{maharjan2023benchmarking, chy2023comparative, kaminski2025comparative} atau membandingkan kecepatan akses Redis dan PostgreSQL pada kueri data umum \cite{levin2024unleashing}. Di sisi lain, pemanfaatan basis data relasional sebagai mesin penjadwal yang tahan gagal \cite{skiadopoulos2022dbos} belum diadu secara langsung dengan antrean memori internal maupun Redis \textit{Sorted Set} di bawah batas komputasi dan \textit{runtime} yang diseragamkan. Celah inilah yang dijawab oleh penelitian Tugas Akhir ini melalui pembangunan \textit{benchmarking testbed} terkontrol untuk menguji \textit{In-Memory Engine}, \textit{Database-Backed Worker} (PostgreSQL), dan \textit{Queue Engine} (Redis) secara berdampingan. \par
 
 \section{Dasar Teori} \label{II.Teori}
-Berisi teori/konsep yang berkaitan/digunakan dalam tugas akhir yang dikerjakan. Gunakanlah data melalui buku/jurnal referensi, publikasi tugas akhir, penelitian, buku, dan informasi web yang dapat dipertanggungjawabkan, hindari penggunaan dasar teori melalui tautan Wikipedia, surat kabar, atau portal berita, yang dapat memiliki isi yang tidak bersifat fakta. \par
+Bagian ini menguraikan konsep teoretis, algoritma struktur data, mekanisme konkurensi basis data, serta formulasi matematis metrik pengujian yang mendasari perancangan dan analisis pada penelitian ini. \par
 
-\subsection{Teori 1} \label{II.Teori1}
-Berikut adalah contoh penyisipan tabel menggunakan \verb|\begin{longtable}{}|: \par
-	
-	\begin{longtable}{|c|c|c|c|}
-		\caption{Contoh Tabel}
-		\label{table:2.contoh}\\
-		\hline
-		Col1 & Col2 & Col2 & Col3 \\
-		\hline
-		\endhead
-		1 & 6 & 87837 & 787 \\ 
-		\hline
-		2 & 7 & 78 & 5415 \\
-		\hline
-		3 & 545 & 778 & 7507 \\
-		\hline
-		4 & 545 & 18744 & 7560 \\
-		\hline
-		5 & 88 & 788 & 6344 \\
-		\hline
-	\end{longtable}
+\subsection{Sistem Penjadwalan Tugas (\textit{Event Scheduling}) dan Metrik Kinerja} \label{II.Teori_Scheduling}
+Berbeda dengan antrean pesan langsung (\textit{immediate message queue}) yang meneruskan tugas ke konsumen sesaat setelah pesan masuk, sebuah \textit{event scheduling engine} menahan eksekusi tugas hingga waktu target (\texttt{scheduled\_at}) yang ditentukan tercapai \cite{kleppmann2026designing}. Evaluasi terhadap kualitas mesin penjadwal waktu nyata bertumpu pada ketepatan waktu eksekusi serta kapasitas pemrosesan di bawah variasi beban kerja. \par
 
-\subsubsection{Subsubbab} \label{II.Teori1.1}
-Berikut adalah contoh subsubbab. Ini adalah level subbab maksimal dalam laporan Tugas Akhir, dan tidak boleh lebih dalam. \par
+\subsubsection{\textit{Temporal Jitter} (\textit{Scheduling Delay})} \label{II.Teori_Jitter}
+Dalam sistem penjadwalan berbasis waktu, sebuah tugas idealnya dieksekusi tepat pada milidetik ketika waktu jatuh temponya tiba. Namun, antrean proses di sisi penjadwal, beban pemeriksaan berkala (\textit{polling}), maupun pengiriman jaringan menyebabkan waktu eksekusi aktual bergeser dari waktu target. Selisih waktu antara saat tugas benar-benar diterima di layanan tujuan dengan waktu target yang dijadwalkan disebut sebagai \textit{temporal jitter} atau \textit{scheduling delay} \cite{buttazzo2011hard}. Untuk setiap tugas ke-$i$, nilai \textit{temporal jitter} ($J_i$) dirumuskan pada \ref{eq:2.jitter}: \par
 
-Gambar \ref{fig:2.contoh} adalah contoh Gambar yang diambil dari internet yang harus dicantumkan sumbernya dan memiliki lisensi Creative Common. Jika gambar adalah milik peneliti lain atau tidak dibuat atau diambil sendiri maka peneliti wajib meminta izin kepada peneliti lain tersebut untuk mencantumkan gambar. Gunakan \verb|\begin{figure}| untuk memasukkan gambar. Gunakan \verb|\caption{[nama caption]}| untuk memberikan caption gambar. Nomor caption akan diurutkan secara otomatis. Jangan lupa untuk melabeli setiap gambar dengan \verb|\label{[nama label]}|, agar bisa direferensi menggunakan \verb|\ref{[nama label]}| \par
-\begin{figure}[H] % Kalau menggunakan H, posisi gambar akan tepat dibawah teks
-	\centering
-	\includegraphics[width=0.6\textwidth]{figure/keyboard.jpg}
-	\caption{Contoh gambar dan caption}
-	\label{fig:2.contoh}
-	{\footnotesize Sumber: Contoh} % Untuk memberikan sumber
-\end{figure}
-
-\subsection{Teori 2} \label{II.teori2}
-Untuk membuat sebuah rumus persamaan, gunakan kode \verb|\begin{equationcaptioned}| seperti dibawah: \par
-	
-\begin{equationcaptioned}[eq:2.sederhana]{
-	x + 1 = 2
+\begin{equationcaptioned}[eq:2.jitter]{
+    J_i = t_{\text{actual}, i} - t_{\text{scheduled}, i}
 }{
-	Rumus sederhana % Caption rumus
+    Temporal Jitter (Scheduling Delay)
 }
 \end{equationcaptioned}
 
-Teks caption rumus tidak akan muncul di teks, tetapi akan muncul di Daftar Rumus. \par
+\noindent dengan $t_{\text{actual}, i}$ menyatakan waktu penerimaan aktual tugas ke-$i$ pada server tujuan dan $t_{\text{scheduled}, i}$ menyatakan waktu target eksekusi yang ditetapkan saat tugas dijadwalkan. Semakin mendekati nol nilai $J_i$, semakin presisi mekanisme penjadwalan yang digunakan \cite{buttazzo2011hard}. \par
 
-\begin{equationcaptioned}[eq:2.mae]{
-    MAE = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
+\subsubsection{Distribusi Persentil ($p50$, $p95$, $p99$)} \label{II.Teori_Persentil}
+Penggunaan rata-rata aritmetika (\textit{mean}) untuk merangkum latensi atau \textit{jitter} sering kali menyembunyikan lonjakan ekstrem yang dialami oleh sebagian kecil tugas ketika antrean sedang padat \cite{kleppmann2026designing}. Oleh sebab itu, distribusi \textit{jitter} dianalisis menggunakan kuantil atau persentil ($p50$, $p95$, dan $p99$). Persentil ke-$k$ ($P_k$) menunjukkan batas nilai \textit{jitter} maksimum yang dialami oleh $k\%$ dari keseluruhan tugas yang berhasil dieksekusi. Pada pengumpulan metrik berbasis histogram seperti Prometheus, nilai kuantil ke-$q$ (dengan $q = k / 100$) diestimasi melalui interpolasi linier di dalam kelas interval (\textit{bucket}) tempat kuantil tersebut berada sebagaimana ditunjukkan pada \ref{eq:2.persentil}: \par
+
+\begin{equationcaptioned}[eq:2.persentil]{
+    P_q = b_{\text{low}} + \left( b_{\text{high}} - b_{\text{low}} \right) \times \frac{q \cdot N - C_{\text{prev}}}{c_b}
 }{
-    Mean Absolute Error (MAE)
+    Estimasi Kuantil Histogram (Persentil Jitter)
 }
 \end{equationcaptioned}
 
-Berikut adalah contoh penulisan persamaan yang lebih kompleks, yaitu persamaan distribusi normal. \par
+\noindent dengan $b_{\text{low}}$ dan $b_{\text{high}}$ adalah batas bawah serta batas atas dari \textit{bucket} yang memuat kuantil $q$, $N$ adalah total seluruh pengamatan, $C_{\text{prev}}$ adalah jumlah kumulatif pengamatan pada \textit{bucket} sebelumnya, dan $c_b$ adalah jumlah pengamatan di dalam \textit{bucket} tersebut. Nilai $p50$ (median) menggambarkan perilaku tipikal sistem, sedangkan $p95$ dan $p99$ (\textit{tail latency}) memperlihatkan seberapa parah kemacetan antrean pada kondisi beban puncak \cite{kleppmann2026designing}. \par
 
-\begin{equationcaptioned}[eq:2.mae]{
-		P(x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}
-	}{
-		Distribusi Normal
-	}
+\subsubsection{\textit{Throughput} dan Pola Beban Kerja} \label{II.Teori_Throughput}
+Selain ketepatan waktu, kapasitas sebuah \textit{event scheduling engine} diukur melalui \textit{throughput} ($T$), yaitu banyaknya tugas jatuh tempo yang berhasil dikirimkan ke layanan tujuan per satuan waktu sebagaimana dirumuskan pada \ref{eq:2.throughput}: \par
+
+\begin{equationcaptioned}[eq:2.throughput]{
+    T = \frac{N_{\text{sukses}}}{\Delta t}
+}{
+    Laju Throughput Eksekusi Tugas
+}
 \end{equationcaptioned}
 
-Jika menuliskan banyak persamaan secara berurutan, gunakan  \verb|\begin{split}|: \par
+\noindent dengan $N_{\text{sukses}}$ menyatakan jumlah tugas yang berhasil dieksekusi dengan status sukses dan $\Delta t$ menyatakan rentang waktu pengamatan dalam satuan detik. Dalam pengujian kinerja penjadwal, \textit{throughput} dan \textit{jitter} diuji di bawah dua pola distribusi beban kerja utama. Pola pertama adalah beban seragam (\textit{uniform load}), di mana waktu jatuh tempo tugas tersebar merata dari waktu ke waktu sehingga menguji efisiensi kondisi tunak (\textit{steady-state}). Pola kedua adalah lonjakan beban serentak (\textit{spike load}), di mana ribuan tugas dijadwalkan jatuh tempo pada satu waktu target yang sama sehingga memaksa sistem menguras tumpukan antrean secepat mungkin. \par
 
-\begin{equationcaptioned}[eq:2.mae]{
-		\begin{split} 
-			2x - 5y &=  8 \\ 
-			3x + 9y &=  -12
-		\end{split}
-	}{
-		Sistem persamaan linier
-	}
+\subsection{Penjadwalan Berbasis Memori Proses (\textit{In-Memory Engine})} \label{II.Teori_InMemory}
+Pendekatan \textit{In-Memory Engine} menempatkan struktur data antrean waktu langsung di dalam ruang memori proses aplikasi yang sama dengan pekerja pengirim pesan. Struktur data yang paling umum dipakai untuk keperluan ini adalah \textit{Min-Heap} (antrean prioritas biner) dan \textit{Hierarchical Timing Wheels}. Pada \textit{Min-Heap}, setiap tugas disimpan sebagai simpul pohon biner lengkap yang diurutkan berdasarkan nilai \texttt{scheduled\_at} terkecil di posisi akar (\textit{root}), sehingga pemeriksaan tugas dengan waktu jatuh tempo terdekat dapat dilakukan dalam kompleksitas waktu $O(1)$, sementara penambahan tugas baru dan penghapusan tugas yang telah jatuh tempo membutuhkan kompleksitas $O(\log n)$ \cite{cormen2022introduction}. Alternatif lainnya, \textit{Timing Wheel}, menggunakan larik melingkar (\textit{circular buffer}) berindeks slot waktu yang mampu menurunkan kompleksitas operasi penyisipan dan pembatalan timer menjadi $O(1)$ \cite{varghese1997hashed}. \par
+
+Keunggulan utama dari \textit{In-Memory Engine} terletak pada ketiadaan biaya serialisasi data, panggilan jaringan (\textit{network round-trip}), maupun operasi baca/tulis disk setiap kali menjadwalkan atau mengambil tugas. Pekerja di dalam aplikasi cukup menunggu sinyal dari \textit{timer} sistem operasi hingga waktu elemen teratas tiba. Kelemahan mendasarnya adalah sifat memori proses yang \textit{volatile}: apabila proses aplikasi berhenti mendadak akibat kegagalan perangkat lunak atau kehabisan memori, seluruh jadwal yang masih mengantre di dalam RAM akan hilang secara permanen \cite{kleppmann2026designing}. \par
+
+\subsection{Penjadwalan Berbasis Basis Data Relasional (\textit{Database-Backed Worker})} \label{II.Teori_RDBMS}
+Untuk menjamin agar jadwal tugas tidak hilang ketika proses aplikasi mati, pendekatan \textit{Database-Backed Worker} menyimpan seluruh jadwal sebagai baris di dalam tabel basis data relasional seperti PostgreSQL \cite{skiadopoulos2022dbos}. Setiap baris menyimpan atribut muatan pesan, target waktu jatuh tempo (\texttt{due\_time}), serta status eksekusi (\texttt{pending}, \texttt{processing}, \texttt{completed}, atau \texttt{failed}). Karena mengandalkan mekanisme \textit{Write-Ahead Logging} (WAL) dan transaksi ACID pada PostgreSQL, jadwal yang telah berhasil ditulis ke tabel tetap aman meskipun proses aplikasi penjadwal mengalami terminasi paksa \cite{kleppmann2026designing}. \par
+
+Tantangan teknis terbesar dalam menjadikan tabel relasional sebagai antrean kerja konkuren adalah mencegah beberapa \textit{worker} mengambil baris tugas yang sama atau saling memblokir saat melakukan \textit{polling} berkala. Jika menggunakan penguncian \texttt{SELECT ... FOR UPDATE} biasa, \textit{worker} kedua yang membaca indeks waktu yang sama akan tertahan menunggu hingga transaksi \textit{worker} pertama selesai. PostgreSQL mengatasi masalah ini melalui klausa \texttt{FOR UPDATE SKIP LOCKED}, yang menginstruksikan mesin kueri untuk langsung melewati baris mana pun yang sedang dikunci oleh transaksi lain dan segera mengambil baris jatuh tempo berikutnya yang masih bebas \cite{postgresql2025doc}. Agar pemindaian indeks tetap cepat seiring bertambahnya jutaan baris tugas yang telah selesai, tabel penjadwalan dikombinasikan dengan \textit{partial index} (\texttt{WHERE status = 'pending'}) sehingga struktur B-Tree hanya mengindeks tugas yang belum dieksekusi, serta protokol \texttt{COPY} untuk mempercepat penyisipan data secara massal \cite{postgresql2025doc}. \par
+
+\subsection{Penjadwalan Berbasis Antrean Terdistribusi (\textit{Queue Engine})} \label{II.Teori_Queue}
+Pendekatan \textit{Queue Engine} memisahkan penyimpanan jadwal dari memori aplikasi ke layanan penyimpanan \textit{in-memory} eksternal seperti Redis, yang diakses melalui pustaka pengelola antrean seperti \texttt{asynq}. Berbeda dengan antrean FIFO biasa yang menggunakan struktur daftar (\textit{List}), penjadwalan tugas tertunda di Redis mengandalkan struktur data \textit{Sorted Set} (\texttt{ZSET}) \cite{carlson2013redis}. Di bagian dalam, \textit{Sorted Set} diimplementasikan menggunakan kombinasi \textit{hash table} dan \textit{skip list} yang menjaga seluruh elemen tetap terurut berdasarkan nilai skor numerik berupa \textit{Unix timestamp} dari waktu target eksekusi, dengan kompleksitas penyisipan (\texttt{ZADD}) dan pengambilan rentang skor (\texttt{ZRANGEBYSCORE}) sebesar $O(\log n)$ \cite{carlson2013redis}. \par
+
+Ketika waktu saat ini telah melewati skor \textit{timestamp} suatu tugas di dalam \textit{Sorted Set}, komponen pemantau pada pustaka antrean memindahkan tugas tersebut secara atomik ke daftar antrean aktif (\textit{ready queue}) agar langsung dikonsumsi oleh kumpulan \textit{worker}. Karena seluruh operasi struktur data berlangsung di RAM milik Redis, pendekatan ini menghindari beban penguncian baris dan pembacaan disk yang berat seperti pada basis data relasional, sekaligus menjaga agar antrean tidak ikut hilang ketika proses aplikasi \textit{consumer} mati \cite{maharjan2023benchmarking, levin2024unleashing}. Konsekuensinya, setiap tugas harus melewati proses serialisasi serta deserialisasi JSON dan melintasi soket jaringan TCP antara proses aplikasi dan server Redis. \par
+
+\subsection{Konsumsi Sumber Daya Kontainer, Ketahanan Kegagalan, dan Sinkronisasi Waktu} \label{II.Teori_Resource}
+Perbedaan cara kerja ketiga strategi di atas tercermin langsung pada profil konsumsi sumber daya sistem operasi. Pemakaian prosesor terbagi ke dalam dua mode eksekusi, yakni \textit{user space} yang menghabiskan siklus CPU untuk mengeksekusi kode aplikasi (seperti pengelolaan struktur data memori, serialisasi JSON, dan penjadwalan \textit{goroutine}) serta \textit{kernel space} yang menangani panggilan sistem (\textit{system calls}) seperti pengiriman paket jaringan TCP/IP, pembacaan disk, dan perpindahan konteks (\textit{context switching}) \cite{gregg2020systems}. Dari sisi memori, penggunaan RAM dibedakan antara alokasi \textit{heap} yang dikelola oleh \textit{garbage collector} bahasa pemrograman dan \textit{Resident Set Size} (RSS) atau \textit{working set} yang mencerminkan total halaman memori fisik yang benar-benar ditempati oleh kontainer. Pada lingkungan berbasis Docker, seluruh metrik penggunaan CPU, memori, serta I/O disk dan jaringan tiap kontainer dicatat langsung oleh kernel Linux melalui subsistem \textit{control groups} (\textit{cgroups}) dan dapat diekstraksi secara berkala menggunakan cAdvisor dan Prometheus \cite{gregg2020systems}. \par
+
+Untuk menguji ketahanan terhadap kegagalan proses (\textit{crash recovery}), evaluasi difokuskan pada dua indikator: waktu pemulihan (\textit{recovery time}) yang dibutuhkan sistem sejak proses dijalankan kembali hingga kembali memproses antrean, serta tingkat kehilangan tugas (\textit{event loss rate}). Persentase kehilangan tugas ($L$) dihitung menggunakan \ref{eq:2.event_loss}: \par
+
+\begin{equationcaptioned}[eq:2.event_loss]{
+    L = \frac{N_{\text{dijadwalkan}} - N_{\text{terkirim}}}{N_{\text{dijadwalkan}}} \times 100\%
+}{
+    Tingkat Kehilangan Tugas (Event Loss Rate)
+}
 \end{equationcaptioned}
+
+\noindent dengan $N_{\text{dijadwalkan}}$ adalah total tugas yang telah masuk ke sistem sebelum kegagalan terjadi dan $N_{\text{terkirim}}$ adalah jumlah tugas yang berhasil diterima oleh server tujuan setelah proses pulih. Mengingat pengukuran waktu jadwal ($t_{\text{scheduled}}$) dan waktu penerimaan aktual ($t_{\text{actual}}$) dilakukan pada mesin virtual yang terpisah untuk mencegah perebutan sumber daya, jam sistem antar-node harus diselaraskan menggunakan protokol Network Time Protocol (NTP) seperti Chrony agar perhitungan \textit{temporal jitter} tidak terdistorsi oleh pergeseran jam (\textit{clock skew}) lintas mesin \cite{kleppmann2026designing}. \par
