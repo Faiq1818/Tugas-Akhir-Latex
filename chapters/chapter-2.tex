@@ -13,7 +13,8 @@ Evaluasi kinerja terhadap sistem antrean pesan, mekanisme penjadwalan tugas, ser
 \end{enumerate}
 
 Ringkasan perbandingan kelima penelitian terdahulu tersebut beserta posisi penelitian Tugas Akhir ini disajikan pada Tabel \ref{table:2.literasi}. \par
-\begin{longtable}{| b{0.04\textwidth}|p{0.21\textwidth}|p{0.20\textwidth}|p{0.15\textwidth}|p{0.25\textwidth}|}
+{\footnotesize\setlength{\tabcolsep}{4pt}%
+\begin{longtable}{|>{\centering\arraybackslash}p{0.05\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.23\textwidth}|}
 	\caption{Literasi Penelitian Terdahulu}
 	\label{table:2.literasi}\\
 	\hline
@@ -36,7 +37,7 @@ Ringkasan perbandingan kelima penelitian terdahulu tersebut beserta posisi penel
 	\hline
 	6. & \textbf{Penelitian ini} (2026) & Belum adanya perbandingan empiris lintas paradigma (\textit{In-Memory Engine}, PostgreSQL \texttt{SKIP LOCKED}, dan Redis \textit{Sorted Set}) pada \textit{runtime} seragam yang mengukur \textit{scheduling delay}, sumber daya, dan pemulihan \textit{crash}. & Eksperimen kuantitatif komparatif pada \textit{testbed} terkontrol (Go v1.26.3, Docker, Chrony, cAdvisor, Prometheus) dengan skenario \textit{uniform load}, \textit{spike load}, dan uji kegagalan. & Memetakan \textit{trade-off} terukur antara \textit{scheduling delay} ($p50, p95, p99$), \textit{throughput}, konsumsi CPU/RAM/I/O, serta durabilitas pasca-\textit{crash} sebagai dasar rekomendasi pemilihan strategi. \\ 
 	\hline
-\end{longtable}
+\end{longtable}}
 
 Berdasarkan kajian terhadap penelitian-penelitian di atas, terlihat bahwa evaluasi yang ada umumnya hanya membandingkan sesama \textit{message broker} untuk pengiriman pesan langsung \cite{maharjan2023benchmarking, chy2023comparative, kaminski2025comparative} atau membandingkan kecepatan akses Redis dan PostgreSQL pada kueri data umum \cite{levin2024unleashing}. Di sisi lain, pemanfaatan basis data relasional sebagai mesin penjadwal yang tahan gagal \cite{skiadopoulos2022dbos} belum diadu secara langsung dengan antrean memori internal maupun Redis \textit{Sorted Set} di bawah batas komputasi dan \textit{runtime} yang diseragamkan. Celah inilah yang dijawab oleh penelitian Tugas Akhir ini melalui pembangunan \textit{benchmarking testbed} terkontrol untuk menguji \textit{In-Memory Engine}, \textit{Database-Backed Worker} (PostgreSQL), dan \textit{Queue Engine} (Redis) secara berdampingan. \par
 

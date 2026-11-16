@@ -102,21 +102,27 @@ Bagian ini memberikan contoh perhitungan kuantitatif terhadap metrik pengujian b
 
 \subsection{Ilustrasi Perhitungan \textit{Scheduling Delay} dan Persentil Histogram} \label{III.Ilustrasi_Delay}
 Sebagai contoh perhitungan individu menggunakan \ref{eq:2.delay}, misalkan sebuah tugas dijadwalkan oleh \textit{producer} dengan target waktu eksekusi \texttt{scheduled\_at} sebesar \texttt{1763251200000} ms ($t_{\text{scheduled}, 1} = 1763251200{,}000\text{ detik}$). Ketika tugas tersebut jatuh tempo dan dikirimkan oleh \textit{consumer}, \textit{Mock FCM Server} mencatat waktu penerimaan aktual pada $t_{\text{actual}, 1} = 1763251200{,}018\text{ detik}$. Berdasarkan kedua nilai tersebut, \textit{scheduling delay} untuk tugas ke-1 dihitung sebagai berikut: \par
-\begin{equation*}
-    D_1 = 1763251200{,}018 - 1763251200{,}000 = 0{,}018\text{ detik } (18\text{ ms})
-\end{equation*}
+\vspace{8pt}
+\begin{center}
+$\displaystyle \begin{aligned}
+    D_1 &= 1763251200{,}018 - 1763251200{,}000 \\
+        &= 0{,}018\text{ detik } (18\text{ ms})
+\end{aligned}$
+\end{center}
+\vspace{8pt}
 
 Seluruh nilai $D_i$ yang dihitung oleh \textit{Mock FCM Server} langsung dikelompokkan ke dalam \textit{bucket} histogram \texttt{push\_mock\_scheduling\_delay\_seconds}. Misalkan dalam satu sesi pengujian terdapat $N = 100$ tugas yang terdistribusi ke dalam lima \textit{bucket} seperti ditunjukkan pada Tabel \ref{table:3.sampel_histogram}. \par
 
-\begin{longtable}{|c|c|c|c|}
+{\footnotesize\setlength{\tabcolsep}{4pt}%
+\begin{longtable}{|>{\centering\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.17\textwidth}|>{\centering\arraybackslash}p{0.15\textwidth}|>{\centering\arraybackslash}p{0.19\textwidth}|}
 	\caption{Contoh Distribusi Sampel Histogram \textit{Scheduling Delay} ($N = 100$)}
 	\label{table:3.sampel_histogram}\\
 	\hline
-	\textbf{Rentang \textit{Bucket} ($b_{\text{low}} \text{ s.d. } b_{\text{high}}$)} & \textbf{Batas Atas (\texttt{le})} & \textbf{Frekuensi ($c_b$)} & \textbf{Frekuensi Kumulatif ($C_b$)} \\
+	\textbf{Rentang \textit{Bucket} ($b_{\text{low}} \text{--} b_{\text{high}}$)} & \textbf{Batas Atas (\texttt{le})} & \textbf{Frekuensi ($c_b$)} & \textbf{Frekuensi Kumulatif ($C_b$)} \\
 	\hline
 	\endfirsthead
 	\hline
-	\textbf{Rentang \textit{Bucket} ($b_{\text{low}} \text{ s.d. } b_{\text{high}}$)} & \textbf{Batas Atas (\texttt{le})} & \textbf{Frekuensi ($c_b$)} & \textbf{Frekuensi Kumulatif ($C_b$)} \\
+	\textbf{Rentang \textit{Bucket} ($b_{\text{low}} \text{--} b_{\text{high}}$)} & \textbf{Batas Atas (\texttt{le})} & \textbf{Frekuensi ($c_b$)} & \textbf{Frekuensi Kumulatif ($C_b$)} \\
 	\hline
 	\endhead
 	$0{,}000\text{ s} < D \le 0{,}005\text{ s}$ & $0{,}005\text{ s}$ & $15$ & $15$ \\
@@ -129,34 +135,56 @@ Seluruh nilai $D_i$ yang dihitung oleh \textit{Mock FCM Server} langsung dikelom
 	\hline
 	$0{,}050\text{ s} < D \le 0{,}100\text{ s}$ & $0{,}100\text{ s}$ & $4$ & $100$ \\
 	\hline
-\end{longtable}
+\end{longtable}}
 
 Berdasarkan distribusi pada Tabel \ref{table:3.sampel_histogram}, nilai persentil $p50$ ($q = 0{,}50$), $p95$ ($q = 0{,}95$), dan $p99$ ($q = 0{,}99$) dihitung menggunakan \ref{eq:2.persentil} sebagai berikut: \par
 \begin{enumerate}[noitemsep]
 	\item Untuk $p50$ ($q = 0{,}50$), posisi pengamatan target adalah $0{,}50 \times 100 = 50$. Posisi ke-50 berada pada \textit{bucket} ketiga ($b_{\text{low}} = 0{,}010\text{ s}$, $b_{\text{high}} = 0{,}025\text{ s}$, $C_{\text{prev}} = 40$, dan $c_b = 40$):
-	\begin{equation*}
-	    P_{0{,}50} = 0{,}010 + (0{,}025 - 0{,}010) \times \frac{50 - 40}{40} = 0{,}010 + 0{,}015 \times 0{,}25 = 0{,}01375\text{ s } (13{,}75\text{ ms})
-	\end{equation*}
+	\par\vspace{8pt}
+	\begin{center}
+	$\displaystyle \begin{aligned}
+	    P_{0{,}50} &= 0{,}010 + (0{,}025 - 0{,}010) \times \frac{50 - 40}{40} \\
+	               &= 0{,}010 + 0{,}015 \times 0{,}25 \\
+	               &= 0{,}01375\text{ s } (13{,}75\text{ ms})
+	\end{aligned}$
+	\end{center}
+	\vspace{8pt}
 	\item Untuk $p95$ ($q = 0{,}95$), posisi pengamatan target adalah $0{,}95 \times 100 = 95$. Posisi ke-95 berada pada \textit{bucket} keempat ($b_{\text{low}} = 0{,}025\text{ s}$, $b_{\text{high}} = 0{,}050\text{ s}$, $C_{\text{prev}} = 80$, dan $c_b = 16$):
-	\begin{equation*}
-	    P_{0{,}95} = 0{,}025 + (0{,}050 - 0{,}025) \times \frac{95 - 80}{16} = 0{,}025 + 0{,}025 \times 0{,}9375 = 0{,}04844\text{ s } (48{,}44\text{ ms})
-	\end{equation*}
+	\par\vspace{8pt}
+	\begin{center}
+	$\displaystyle \begin{aligned}
+	    P_{0{,}95} &= 0{,}025 + (0{,}050 - 0{,}025) \times \frac{95 - 80}{16} \\
+	               &= 0{,}025 + 0{,}025 \times 0{,}9375 \\
+	               &= 0{,}04844\text{ s } (48{,}44\text{ ms})
+	\end{aligned}$
+	\end{center}
+	\vspace{8pt}
 	\item Untuk $p99$ ($q = 0{,}99$), posisi pengamatan target adalah $0{,}99 \times 100 = 99$. Posisi ke-99 berada pada \textit{bucket} kelima ($b_{\text{low}} = 0{,}050\text{ s}$, $b_{\text{high}} = 0{,}100\text{ s}$, $C_{\text{prev}} = 96$, dan $c_b = 4$):
-	\begin{equation*}
-	    P_{0{,}99} = 0{,}050 + (0{,}100 - 0{,}050) \times \frac{99 - 96}{4} = 0{,}050 + 0{,}050 \times 0{,}75 = 0{,}0875\text{ s } (87{,}50\text{ ms})
-	\end{equation*}
+	\par\vspace{8pt}
+	\begin{center}
+	$\displaystyle \begin{aligned}
+	    P_{0{,}99} &= 0{,}050 + (0{,}100 - 0{,}050) \times \frac{99 - 96}{4} \\
+	               &= 0{,}050 + 0{,}050 \times 0{,}75 \\
+	               &= 0{,}0875\text{ s } (87{,}50\text{ ms})
+	\end{aligned}$
+	\end{center}
+	\vspace{8pt}
 \end{enumerate}
 
 \subsection{Ilustrasi Perhitungan \textit{Throughput} dan Tingkat Kehilangan Tugas} \label{III.Ilustrasi_Throughput}
 Untuk mengilustrasikan perhitungan \textit{throughput} menggunakan \ref{eq:2.throughput}, misalkan pada skenario \textit{spike load} terdapat $N_{\text{sukses}} = 5.000$ tugas yang jatuh tempo bersamaan dan seluruhnya berhasil diterima dengan status HTTP \texttt{200} di \textit{Mock FCM Server} dalam rentang waktu pengamatan $\Delta t = 2{,}5\text{ detik}$. Laju \textit{throughput} eksekusi sistem tersebut adalah: \par
-\begin{equation*}
-    T = \frac{5.000}{2{,}5} = 2.000\text{ tugas/detik}
-\end{equation*}
+\vspace{8pt}
+\begin{center}
+$\displaystyle T = \frac{5.000}{2{,}5} = 2.000\text{ tugas/detik}$
+\end{center}
+\vspace{8pt}
 
 Sementara itu, pada skenario uji kegagalan (\textit{crash recovery}), misalkan terdapat $N_{\text{dijadwalkan}} = 5.000$ tugas yang telah masuk ke dalam sistem sebelum proses aplikasi \textit{consumer} dihentikan paksa. Setelah proses dinyalakan kembali dan antrean selesai diproses, tercatat sebanyak $N_{\text{terkirim}} = 4.900$ tugas yang berhasil diterima oleh \textit{Mock FCM Server}. Berdasarkan \ref{eq:2.event_loss}, persentase kehilangan tugas ($L$) adalah: \par
-\begin{equation*}
-    L = \frac{5.000 - 4.900}{5.000} \times 100\% = 2{,}0\%
-\end{equation*}
+\vspace{8pt}
+\begin{center}
+$\displaystyle L = \frac{5.000 - 4.900}{5.000} \times 100\% = 2{,}0\%$
+\end{center}
+\vspace{8pt}
 
 \section{Rancangan Pengujian} \label{III.Rancang_Uji}
 Rancangan pengujian disusun untuk memverifikasi kesiapan infrastruktur, kebenaran fungsionalitas perangkat lunak yang dibangun, serta skenario pengujian non-fungsional pada ketiga strategi \textit{event scheduling} beserta hipotesis hasil yang diharapkan. \par
@@ -173,7 +201,8 @@ Sebelum menjalankan skenario eksperimen, dilakukan pemeriksaan terhadap lingkung
 \subsection{Rancangan Pengujian Fungsional Perangkat Lunak} \label{III.Uji_Fungsional}
 Pengujian fungsional dilakukan dengan pendekatan \textit{black-box testing} untuk memastikan seluruh komponen perangkat lunak yang dikembangkan pada direktori pengujian (\textit{producer CLI}, \textit{consumer} ketiga strategi, \textit{Mock FCM Server}, serta pipa telemetri Prometheus dan Grafana) berjalan sesuai spesifikasi. Rincian butir pengujian fungsional disajikan pada Tabel \ref{table:3.uji_fungsional}. \par
 
-\begin{longtable}{|b{0.05\textwidth}|p{0.22\textwidth}|p{0.28\textwidth}|p{0.30\textwidth}|}
+{\footnotesize\setlength{\tabcolsep}{4pt}%
+\begin{longtable}{|>{\centering\arraybackslash}p{0.05\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.33\textwidth}|}
 	\caption{Rancangan Pengujian Fungsional Perangkat Lunak}
 	\label{table:3.uji_fungsional}\\
 	\hline
@@ -186,20 +215,21 @@ Pengujian fungsional dilakukan dengan pendekatan \textit{black-box testing} untu
 	\endhead
 	1. & \textit{Producer CLI} (\textit{Workload Generator}) & Menjalankan perintah \textit{producer} dengan argumen jumlah tugas (\texttt{-n}), waktu tunda (\texttt{-delay}), dan konkurensi (\texttt{-concurrency}). & Seluruh tugas berhasil disisipkan ke penyimpanan atau memori target tanpa galat (\texttt{Errors: 0}) dan menampilkan ringkasan \textit{enqueue throughput}. \\
 	\hline
-	2. & \textit{Consumer} Ketiga Strategi Penjadwalan & Menjadwalkan tugas dengan waktu tunda tertentu (misalnya 5 detik) dan memantau proses eksekusi saat waktu target tercapai. & Tugas ditahan hingga waktu \texttt{scheduled\_at} tercapai, lalu dikirimkan ke \textit{endpoint} \texttt{POST /v1/projects/:project\_id/messages:send} milik \textit{Mock FCM Server}. \\
+	2. & \textit{Consumer} Ketiga Strategi Penjadwalan & Menjadwalkan tugas dengan waktu tunda tertentu (misalnya 5 detik) dan memantau proses eksekusi saat waktu target tercapai. & Tugas ditahan hingga waktu \texttt{scheduled\_at} tercapai, lalu dikirimkan ke \textit{endpoint} \texttt{POST /v1/projects/}\allowbreak\texttt{:project\_id/}\allowbreak\texttt{messages:send} milik \textit{Mock FCM Server}. \\
 	\hline
-	3. & Validasi \textit{Payload} pada \textit{Mock FCM Server} & Mengirimkan permintaan HTTP berisi muatan JSON sesuai kontrak FCM HTTP v1 API serta permintaan dengan muatan tanpa atribut target (\texttt{token}/\texttt{topic}). & Server mengembalikan status \texttt{200 OK} beserta identitas pesan untuk muatan valid, dan mengembalikan \texttt{400 Bad Request} (\texttt{INVALID\_ARGUMENT}) untuk muatan tidak valid. \\
+	3. & Validasi \textit{Payload} pada \textit{Mock FCM Server} & Mengirimkan permintaan HTTP berisi muatan JSON sesuai kontrak FCM HTTP v1 API serta permintaan dengan muatan tanpa atribut target (\texttt{token}/\allowbreak\texttt{topic}). & Server mengembalikan status \texttt{200 OK} beserta identitas pesan untuk muatan valid, dan mengembalikan \texttt{400 Bad Request} (\texttt{INVALID\_}\allowbreak\texttt{ARGUMENT}) untuk muatan tidak valid. \\
 	\hline
-	4. & Eksportir Metrik pada \textit{Mock FCM Server} & Mengakses \textit{endpoint} \texttt{GET /metrics} setelah sejumlah pesan berhasil diterima oleh \textit{Mock FCM Server}. & Metrik \texttt{push\_mock\_requests\_total}, \texttt{push\_mock\_request\_duration\_seconds}, dan \texttt{push\_mock\_scheduling\_delay\_seconds} tercatat secara akurat. \\
+	4. & Eksportir Metrik pada \textit{Mock FCM Server} & Mengakses \textit{endpoint} \texttt{GET /metrics} setelah sejumlah pesan berhasil diterima oleh \textit{Mock FCM Server}. & Metrik \texttt{push\_mock\_}\allowbreak\texttt{requests\_total}, \texttt{push\_mock\_}\allowbreak\texttt{request\_duration\_}\allowbreak\texttt{seconds}, dan \texttt{push\_mock\_}\allowbreak\texttt{scheduling\_delay\_}\allowbreak\texttt{seconds} tercatat secara akurat. \\
 	\hline
 	5. & Pipa Observabilitas (cAdvisor, Prometheus, Grafana) & Menjalankan kontainer pengujian dan memeriksa target \textit{scraping} pada Prometheus serta panel dasbor Grafana. & Status target \texttt{mock-server} dan \texttt{cadvisor} pada Prometheus bernilai \texttt{UP}, serta grafik \textit{throughput}, kuantil \textit{scheduling delay}, CPU, dan RAM tampil pada Grafana. \\
 	\hline
-\end{longtable}
+\end{longtable}}
 
 \subsection{Rancangan Skenario Pengujian Non-Fungsional} \label{III.Uji_NonFungsional}
 Pengujian non-fungsional merupakan inti eksperimen komparatif untuk mengevaluasi kinerja waktu nyata, konsumsi sumber daya, dan ketahanan terhadap kegagalan dari \textit{In-Memory Engine}, \textit{Database-Backed Worker} (PostgreSQL), dan \textit{Queue Engine} (Redis). Setiap strategi diuji secara bergantian pada tiga skenario beban dan kegagalan sebagaimana dirangkum pada Tabel \ref{table:3.skenario_nonfungsional}. \par
 
-\begin{longtable}{|b{0.05\textwidth}|p{0.18\textwidth}|p{0.25\textwidth}|p{0.18\textwidth}|p{0.19\textwidth}|}
+{\footnotesize\setlength{\tabcolsep}{4pt}%
+\begin{longtable}{|>{\centering\arraybackslash}p{0.05\textwidth}|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\raggedright\arraybackslash}p{0.25\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
 	\caption{Matriks Skenario Pengujian Non-Fungsional}
 	\label{table:3.skenario_nonfungsional}\\
 	\hline
@@ -210,13 +240,13 @@ Pengujian non-fungsional merupakan inti eksperimen komparatif untuk mengevaluasi
 	\textbf{No.} & \textbf{Skenario Uji} & \textbf{Konfigurasi Beban Kerja} & \textbf{Metrik yang Diukur} & \textbf{Tujuan Evaluasi} \\
 	\hline
 	\endhead
-	1. & Beban Seragam (\textit{Uniform Load}) & Penyuntikan tugas terjadwal secara bertahap ($1.000$, $5.000$, dan $10.000$ tugas) dengan waktu jatuh tempo tersebar merata sepanjang jendela pengujian. & \textit{Scheduling delay} ($p50, p95, p99$), \textit{throughput}, utilisasi CPU (\textit{user}/\textit{kernel}), RAM (Heap/RSS), serta I/O disk dan jaringan. & Mengukur presisi waktu eksekusi dan efisiensi pemakaian sumber daya pada kondisi operasional stabil (\textit{steady-state}). \\
+	1. & Beban Seragam (\textit{Uniform Load}) & Penyuntikan tugas terjadwal secara bertahap ($1.000$, $5.000$, dan $10.000$ tugas) dengan waktu jatuh tempo tersebar merata sepanjang jendela pengujian. & \textit{Scheduling delay} ($p50, p95, p99$), \textit{throughput}, utilisasi CPU (\textit{user}/\allowbreak\textit{kernel}), RAM (Heap/RSS), serta I/O disk dan jaringan. & Mengukur presisi waktu eksekusi dan efisiensi pemakaian sumber daya pada kondisi operasional stabil (\textit{steady-state}). \\
 	\hline
-	2. & Lonjakan Beban Serentak (\textit{Spike Load}) & Penyuntikan $1.000$, $5.000$, dan $10.000$ tugas yang seluruhnya dijadwalkan memiliki waktu jatuh tempo (\texttt{scheduled\_at}) pada detik yang sama. & \textit{Throughput} puncak (tugas/detik), degradasi \textit{scheduling delay} pada persentil ekor ($p95, p99$), serta lonjakan konsumsi CPU, RAM, dan I/O. & Menguji batas saturasi \textit{throughput} maksimum dan kecepatan pengurasan antrean saat terjadi ledakan jadwal jatuh tempo. \\
+	2. & Lonjakan Beban Serentak (\textit{Spike Load}) & Penyuntikan $1.000$, $5.000$, dan $10.000$ tugas yang seluruhnya dijadwalkan memiliki waktu jatuh tempo (\texttt{scheduled\_at}) pada detik yang sama. & \textit{Throughput} puncak (tugas/\allowbreak detik), degradasi \textit{scheduling delay} pada persentil ekor ($p95, p99$), serta lonjakan konsumsi CPU, RAM, dan I/O. & Menguji batas saturasi \textit{throughput} maksimum dan kecepatan pengurasan antrean saat terjadi ledakan jadwal jatuh tempo. \\
 	\hline
 	3. & Uji Kegagalan Proses (\textit{Crash Recovery}) & Penghentian paksa proses kontainer \textit{consumer} (\texttt{SIGKILL} / \texttt{docker kill}) ketika ribuan tugas masih berada di dalam antrean, diikuti penghidupan ulang kontainer. & Tingkat kehilangan tugas (\textit{event loss rate} $L$), jumlah tugas terlambat, dan waktu pemulihan (\textit{recovery time}). & Mengevaluasi jaminan durabilitas data dan kecepatan pemulihan layanan pascakegagalan proses aplikasi. \\
 	\hline
-\end{longtable}
+\end{longtable}}
 
 Setiap kombinasi strategi dan skenario pada Tabel \ref{table:3.skenario_nonfungsional} diulang sebanyak tiga kali (\textit{multiple runs}) dengan melakukan pembersihan status (\textit{container restart}, pengosongan tabel \texttt{scheduled\_tasks} pada PostgreSQL, serta \texttt{FLUSHALL} pada Redis) di antara setiap sesi pengujian untuk menjamin konsistensi hasil. \par
 
