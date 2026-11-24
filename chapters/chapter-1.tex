@@ -27,7 +27,7 @@ Ketiga pendekatan tersebut memiliki \textit{trade-off} yang berlawanan antara ke
 \section{Batasan Masalah} \label{I.Batasan}
 \begin{enumerate}
 	\item Penelitian membandingkan tiga strategi yaitu In-Memory Engine, Database-Backed Worker menggunakan PostgreSQL, dan Queue Engine menggunakan Redis.
-	\item Seluruh pengujian menggunakan satu bahasa pemrograman dan runtime yang sama, pada satu mesin dengan spesifikasi tetap, dijalankan dalam container dengan batas sumber daya yang seragam.
+	\item Seluruh pengujian menggunakan satu bahasa pemrograman dan runtime yang sama, pada mesin dengan spesifikasi tetap, dijalankan dalam container dengan batas sumber daya yang seragam.
 	\item Redis dan PostgreSQL diuji dalam konfigurasi single-node. Klaster, replikasi, dan sharding tidak dicakup
 	\item Uji kegagalan dibatasi pada penghentian paksa proses aplikasi. Kegagalan jaringan dan kegagalan perangkat keras tidak dicakup.
 	\item Pola beban dibatasi pada dua jenis: uniform dan spike

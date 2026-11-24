@@ -2,7 +2,7 @@
 \chapter{METODE PENELITIAN} \label{Bab III}
 
 \section{Alur Penelitian} \label{III.Alur}
-Penelitian ini dilakukan melalui eksperimen komparatif untuk mengukur dan membandingkan ketepatan waktu eksekusi, konsumsi sumber daya, serta ketahanan terhadap kegagalan dari tiga strategi \textit{event scheduling engine} (\textit{In-Memory Engine}, \textit{Database-Backed Worker}, dan \textit{Queue Engine}). Tahapan penelitian dimulai dari studi literatur, perancangan arsitektur \textit{benchmarking testbed}, implementasi ketiga strategi beserta \textit{Mock FCM Server}, pembuatan \textit{workload generator} dan pemasangan perangkat pemantauan, validasi \textit{testbed}, pelaksanaan eksperimen pada skenario \textit{uniform load}, \textit{spike load}, dan uji kegagalan, pengolahan data hasil pengujian, hingga penyusunan rekomendasi pemilihan strategi. Urutan tahapan penelitian tersebut ditunjukkan pada Gambar \ref{fig:3.alur}. \par
+Penelitian ini dilakukan melalui eksperimen komparatif untuk mengukur dan membandingkan ketepatan waktu eksekusi, konsumsi sumber daya, serta ketahanan terhadap kegagalan dari tiga strategi \textit{event scheduling engine} (\textit{In-Memory Engine}, \textit{Database-Backed Worker}, dan \textit{Queue Engine}). Tahapan penelitian dimulai dari studi literatur, perancangan arsitektur \textit{benchmarking testbed}, implementasi ketiga strategi beserta \textit{Mock FCM Server}, pembuatan \textit{workload generator} dan pemasangan perangkat pemantauan, validasi \textit{testbed}, pelaksanaan eksperimen pada skenario \textit{uniform load}, \textit{spike load}, dan uji kegagalan, pengolahan data hasil pengujian, hingga penyusunan rekomendasi pemilihan strategi. Urutan tahapan penelitian tersebut ditunjukkan pada Gambar \ref{fig:3.alur} berikut. \par
 
 \begin{figure}[H] % Kalau menggunakan H, posisi gambar akan tepat dibawah teks
     \centering
@@ -33,7 +33,7 @@ Sebelum mengambil data utama, dilakukan \textit{pilot test} untuk memastikan sel
 Eksperimen dijalankan secara bergantian untuk \textit{In-Memory Engine}, \textit{Database-Backed Worker}, dan \textit{Queue Engine} di atas VM SUT. Setiap kali berganti sesi pengujian, seluruh \textit{container} dimulai ulang serta isi tabel PostgreSQL dan data di Redis dikosongkan agar sisa pengujian sebelumnya tidak memengaruhi sesi berikutnya. Ketiga strategi diuji pada skenario \textit{uniform load}, \textit{spike load}, serta uji kegagalan dengan mematikan paksa proses aplikasi saat sedang memproses antrean. Dari setiap sesi, dikumpulkan log waktu terima pesan di \textit{Mock FCM Server}, metrik sumber daya dari Prometheus, jumlah tugas yang hilang atau terlambat akibat proses dimatikan, serta waktu yang dibutuhkan sistem untuk kembali memproses antrean. \par
 
 \subsection{Pengolahan dan Analisis Statistik Data Pengujian} \label{III.Langkah 7}
-Data mentah waktu eksekusi per \textit{event} dari \textit{Mock FCM Server} beserta data \textit{time-series} konsumsi sumber daya dari Prometheus kemudian diolah menggunakan skrip Python (\texttt{pandas}, \texttt{scipy}, dan \texttt{matplotlib}). Sebagai sumber angka hasil penelitian, nilai \textit{scheduling delay} tiap tugas ($D_i$) dihitung secara eksak dari selisih antara waktu terima aktual dengan waktu target (\texttt{scheduled\_at}) pada log mentah per \textit{event}, lalu diurutkan untuk memperoleh nilai persentil empiris $p50$, $p95$, dan $p99$ bersama capaian \textit{throughput} per detik tanpa dipengaruhi galat interpolasi \textit{bucket} histogram Prometheus. Di samping itu, metrik pemakaian CPU, memori, dan I/O dari Prometheus dipetakan terhadap beban kerja yang masuk, sedangkan data uji kegagalan dihitung untuk melihat banyaknya tugas yang hilang maupun waktu pemulihan tiap strategi. \par
+Data mentah waktu eksekusi per \textit{event} dari \textit{Mock FCM Server} beserta data \textit{time-series} konsumsi sumber daya dari Prometheus kemudian diolah menggunakan skrip Python (\texttt{pandas}, \texttt{scipy}, dan \texttt{matplotlib}). Sebagai sumber angka hasil penelitian, nilai \textit{scheduling delay} tiap tugas ($D_i$) dihitung secara eksak dari selisih antara waktu terima aktual dengan waktu target (\texttt{scheduled\_at}) pada log mentah per \textit{event}, lalu diurutkan untuk memperoleh nilai persentil $p50$, $p95$, dan $p99$ bersama capaian \textit{throughput} per detik. Di samping itu, metrik pemakaian CPU, memori, dan I/O dari Prometheus dipetakan terhadap beban kerja yang masuk, sedangkan data uji kegagalan dihitung untuk melihat banyaknya tugas yang hilang maupun waktu pemulihan tiap strategi. \par
 
 \subsection{Penyusunan Rekomendasi Pemilihan Strategi dan Penarikan Kesimpulan} \label{III.Langkah 8}
 Hasil perbandingan dari seluruh skenario tersebut dipakai untuk melihat \textit{trade-off} nyata di antara ketiga strategi, baik dari sisi ketepatan waktu eksekusi, batas \textit{throughput}, pemakaian sumber daya, maupun keamanan data saat proses mengalami \textit{crash}. Dari temuan ini, disusun panduan pemilihan strategi \textit{event scheduling} sesuai kebutuhan sistem, misalnya kapan cukup menggunakan memori internal dan kapan harus beralih ke PostgreSQL atau Redis, beserta batasan kondisi berlakunya dan kesimpulan akhir penelitian. \par
@@ -65,7 +65,7 @@ Bahan yang digunakan dan diolah dalam penelitian ini adalah sebagai berikut: \pa
 \end{enumerate}
 
 \section{Metode Pengembangan} \label{III.Metode}
-Bagian ini menjabarkan metode pengembangan perangkat lunak yang digunakan untuk membangun lingkungan \textit{benchmarking testbed}, rancangan mekanisme internal dari ketiga strategi \textit{event scheduling}, cara pengumpulan data selama eksperimen, serta metode pengujian yang menjadi dasar pembahasan pada Bab \ref{Bab IV}. \par
+Bagian ini menjabarkan metode pengembangan perangkat lunak yang digunakan untuk membangun lingkungan \textit{benchmarking testbed}, rancangan mekanisme internal dari ketiga strategi \textit{event scheduling}, cara pengumpulan data selama eksperimen, serta metode pengujian yang menjadi dasar pembahasan pada Bab IV. \par
 
 \subsection{Metode dan Alur Pengembangan Sistem} \label{III.Alur_Pengembangan}
 Pembangunan perangkat lunak dalam penelitian ini menggunakan pendekatan \textit{iterative and incremental development}. Pendekatan ini dipilih karena komponen yang dibangun bukanlah produk komersial dengan kebutuhan pengguna akhir yang berubah-ubah, melainkan instrumen eksperimen (\textit{benchmarking testbed}) yang menuntut kesamaan perilaku fungsional di antara tiga arsitektur berbeda. Melalui siklus iteratif, setiap komponen dapat dibangun secara bertahap, diuji keseragaman keluarannya, dan dikalibrasi batas sumber dayanya sebelum digunakan untuk mengambil data pengujian. Urutan tahapan pengembangan perangkat lunak tersebut ditunjukkan pada Gambar \ref{fig:3.alur_pengembangan}. \par
@@ -98,9 +98,9 @@ Pengumpulan data dilakukan secara otomatis melalui pencatatan langsung (\textit{
 Penelitian ini menerapkan metode pengujian eksperimental terkontrol (\textit{controlled experiment}) dengan membandingkan ketiga strategi penjadwalan di bawah skenario beban dan gangguan yang terukur. Variabel bebas (\textit{independent variables}) dalam pengujian ini adalah strategi penjadwalan (\textit{In-Memory Engine}, \textit{Database-Backed Worker}, dan \textit{Queue Engine}) serta skenario uji yang terdiri atas beban seragam (\textit{uniform load}), lonjakan beban serentak (\textit{spike load}), dan penghentian paksa proses aplikasi (\textit{crash recovery}). Untuk mencegah bias pengukuran, variabel kontrol dijaga tetap sama di sepanjang eksperimen, mencakup spesifikasi perangkat keras VM, batas vCPU dan RAM pada Docker Compose, versi runtime Go v1.26.3, sinkronisasi jam Chrony antar-VM, serta pembersihan penuh isi basis data dan \textit{container} sebelum memulai sesi uji baru. Kinerja masing-masing strategi kemudian dievaluasi berdasarkan variabel terikat (\textit{dependent variables}) berupa distribusi \textit{scheduling delay} ($p50$, $p95$, $p99$), \textit{throughput} maksimum, profil penggunaan CPU, memori, dan I/O, serta tingkat kehilangan tugas dan waktu pemulihan. \par
 
 \section{Ilustrasi Perhitungan Metode} \label{III.Ilustrasi}
-Bagian ini memberikan contoh perhitungan kuantitatif terhadap metrik pengujian berdasarkan rumus yang telah dijabarkan pada Subbab \ref{II.Teori}. Ilustrasi berikut menggunakan data sampel pencatatan dari \textit{Mock FCM Server} dan Prometheus untuk memperjelas cara pengolahan data yang diterapkan pada Bab \ref{Bab IV}. \par
+Bagian ini memberikan contoh perhitungan kuantitatif terhadap metrik pengujian berdasarkan rumus yang telah dijabarkan pada Subbab \ref{II.Teori}. Ilustrasi berikut menggunakan data sampel pencatatan dari \textit{Mock FCM Server} dan Prometheus untuk memperjelas cara pengolahan data yang diterapkan pada Bab IV. \par
 
-\subsection{Ilustrasi Perhitungan \textit{Scheduling Delay} dan Persentil Histogram} \label{III.Ilustrasi_Delay}
+\subsection{Ilustrasi Perhitungan \textit{Scheduling Delay} dan Persentil} \label{III.Ilustrasi_Delay}
 Sebagai contoh perhitungan individu menggunakan \ref{eq:2.delay}, misalkan sebuah tugas dijadwalkan melalui permintaan HTTP dengan target waktu eksekusi \texttt{scheduled\_at} sebesar \texttt{1763251200000} ms ($t_{\text{scheduled}, 1} = 1763251200{,}000\text{ detik}$). Ketika tugas tersebut jatuh tempo dan dikirimkan oleh layanan penjadwal, \textit{Mock FCM Server} mencatat waktu penerimaan aktual pada $t_{\text{actual}, 1} = 1763251200{,}018\text{ detik}$. Berdasarkan kedua nilai tersebut, \textit{scheduling delay} untuk tugas ke-1 yang direkam ke dalam log mentah per \textit{event} adalah sebagai berikut: \par
 \vspace{8pt}
 \begin{center}
@@ -111,64 +111,18 @@ $\displaystyle \begin{aligned}
 \end{center}
 \vspace{8pt}
 
-Untuk analisis hasil akhir pada Bab \ref{Bab IV}, seluruh nilai mentah $D_i$ per \textit{event} dari berkas log langsung diurutkan menggunakan pustaka \texttt{pandas} guna memperoleh kuantil empiris eksak ($p50$, $p95$, dan $p99$) tanpa galat pembulatan interval. Di samping pencatatan log mentah tersebut, \textit{Mock FCM Server} juga mengelompokkan nilai $D_i$ ke dalam \textit{bucket} histogram \texttt{push\_mock\_scheduling\_delay\_seconds} untuk keperluan visualisasi waktu nyata pada dasbor Grafana. Sebagai ilustrasi cara kerja estimasi kuantil pada dasbor tersebut, misalkan terdapat $N = 100$ tugas yang terdistribusi ke dalam lima \textit{bucket} seperti ditunjukkan pada Tabel \ref{table:3.sampel_histogram}. \par
+Untuk mengilustrasikan perhitungan persentil ($p50$, $p95$, dan $p99$) menggunakan \ref{eq:2.persentil}, misalkan dari berkas log mentah tercatat sampel sebanyak $N = 20$ nilai \textit{scheduling delay} yang setelah diurutkan menaik ($D_{(1)}$ hingga $D_{(20)}$, dalam satuan milidetik) menghasilkan deret berikut: \par
+\vspace{8pt}
+\begin{center}
+$4,\ 5,\ 6,\ 7,\ 8,\ 9,\ 10,\ 11,\ 12,\ \mathbf{14},\ 15,\ 16,\ 18,\ 20,\ 22,\ 25,\ 29,\ 35,\ \mathbf{48},\ \mathbf{85}\text{ ms}$
+\end{center}
+\vspace{8pt}
 
-{\footnotesize\setlength{\tabcolsep}{4pt}%
-\begin{longtable}{|>{\centering\arraybackslash}p{0.35\textwidth}|>{\centering\arraybackslash}p{0.17\textwidth}|>{\centering\arraybackslash}p{0.15\textwidth}|>{\centering\arraybackslash}p{0.19\textwidth}|}
-	\caption{Contoh Distribusi Sampel Histogram \textit{Scheduling Delay} ($N = 100$)}
-	\label{table:3.sampel_histogram}\\
-	\hline
-	\textbf{Rentang \textit{Bucket} ($b_{\text{low}} \text{--} b_{\text{high}}$)} & \textbf{Batas Atas (\texttt{le})} & \textbf{Frekuensi ($c_b$)} & \textbf{Frekuensi Kumulatif ($C_b$)} \\
-	\hline
-	\endfirsthead
-	\hline
-	\textbf{Rentang \textit{Bucket} ($b_{\text{low}} \text{--} b_{\text{high}}$)} & \textbf{Batas Atas (\texttt{le})} & \textbf{Frekuensi ($c_b$)} & \textbf{Frekuensi Kumulatif ($C_b$)} \\
-	\hline
-	\endhead
-	$0{,}000\text{ s} < D \le 0{,}005\text{ s}$ & $0{,}005\text{ s}$ & $15$ & $15$ \\
-	\hline
-	$0{,}005\text{ s} < D \le 0{,}010\text{ s}$ & $0{,}010\text{ s}$ & $25$ & $40$ \\
-	\hline
-	$0{,}010\text{ s} < D \le 0{,}025\text{ s}$ & $0{,}025\text{ s}$ & $40$ & $80$ \\
-	\hline
-	$0{,}025\text{ s} < D \le 0{,}050\text{ s}$ & $0{,}050\text{ s}$ & $16$ & $96$ \\
-	\hline
-	$0{,}050\text{ s} < D \le 0{,}100\text{ s}$ & $0{,}100\text{ s}$ & $4$ & $100$ \\
-	\hline
-\end{longtable}}
-
-Berdasarkan distribusi pada Tabel \ref{table:3.sampel_histogram}, dasbor pemantauan mengestimasi nilai persentil $p50$ ($q = 0{,}50$), $p95$ ($q = 0{,}95$), dan $p99$ ($q = 0{,}99$) menggunakan \ref{eq:2.persentil} sebagai berikut: \par
+Berdasarkan urutan data mentah tersebut, nilai $p50$, $p95$, dan $p99$ diperoleh sebagai berikut: \par
 \begin{enumerate}[noitemsep]
-	\item Untuk $p50$ ($q = 0{,}50$), posisi pengamatan target adalah $0{,}50 \times 100 = 50$. Posisi ke-50 berada pada \textit{bucket} ketiga ($b_{\text{low}} = 0{,}010\text{ s}$, $b_{\text{high}} = 0{,}025\text{ s}$, $C_{\text{prev}} = 40$, dan $c_b = 40$):
-	\par\vspace{8pt}
-	\begin{center}
-	$\displaystyle \begin{aligned}
-	    P_{0{,}50} &= 0{,}010 + (0{,}025 - 0{,}010) \times \frac{50 - 40}{40} \\
-	               &= 0{,}010 + 0{,}015 \times 0{,}25 \\
-	               &= 0{,}01375\text{ s } (13{,}75\text{ ms})
-	\end{aligned}$
-	\end{center}
-	\vspace{8pt}
-	\item Untuk $p95$ ($q = 0{,}95$), posisi pengamatan target adalah $0{,}95 \times 100 = 95$. Posisi ke-95 berada pada \textit{bucket} keempat ($b_{\text{low}} = 0{,}025\text{ s}$, $b_{\text{high}} = 0{,}050\text{ s}$, $C_{\text{prev}} = 80$, dan $c_b = 16$):
-	\par\vspace{8pt}
-	\begin{center}
-	$\displaystyle \begin{aligned}
-	    P_{0{,}95} &= 0{,}025 + (0{,}050 - 0{,}025) \times \frac{95 - 80}{16} \\
-	               &= 0{,}025 + 0{,}025 \times 0{,}9375 \\
-	               &= 0{,}04844\text{ s } (48{,}44\text{ ms})
-	\end{aligned}$
-	\end{center}
-	\vspace{8pt}
-	\item Untuk $p99$ ($q = 0{,}99$), posisi pengamatan target adalah $0{,}99 \times 100 = 99$. Posisi ke-99 berada pada \textit{bucket} kelima ($b_{\text{low}} = 0{,}050\text{ s}$, $b_{\text{high}} = 0{,}100\text{ s}$, $C_{\text{prev}} = 96$, dan $c_b = 4$):
-	\par\vspace{8pt}
-	\begin{center}
-	$\displaystyle \begin{aligned}
-	    P_{0{,}99} &= 0{,}050 + (0{,}100 - 0{,}050) \times \frac{99 - 96}{4} \\
-	               &= 0{,}050 + 0{,}050 \times 0{,}75 \\
-	               &= 0{,}0875\text{ s } (87{,}50\text{ ms})
-	\end{aligned}$
-	\end{center}
-	\vspace{8pt}
+	\item Untuk $p50$ ($k = 50$), indeks urutan adalah $\lceil \frac{50}{100} \times 20 \rceil = \lceil 10 \rceil = 10$, sehingga $P_{50} = D_{(10)} = 14\text{ ms}$.
+	\item Untuk $p95$ ($k = 95$), indeks urutan adalah $\lceil \frac{95}{100} \times 20 \rceil = \lceil 19 \rceil = 19$, sehingga $P_{95} = D_{(19)} = 48\text{ ms}$.
+	\item Untuk $p99$ ($k = 99$), indeks urutan adalah $\lceil \frac{99}{100} \times 20 \rceil = \lceil 19{,}8 \rceil = 20$, sehingga $P_{99} = D_{(20)} = 85\text{ ms}$.
 \end{enumerate}
 
 \subsection{Ilustrasi Perhitungan \textit{Throughput} dan Tingkat Kehilangan Tugas} \label{III.Ilustrasi_Throughput}
